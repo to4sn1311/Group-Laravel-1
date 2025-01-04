@@ -1,8 +1,31 @@
 import Pagination from '@/Components/Pagination';
+import SelectInput from '@/Components/SelectInput';
+import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
-export default function Dashboard({ products }) {
+export default function Dashboard({
+    products,
+    categories,
+    queryParams = null,
+}) {
+    queryParams = queryParams || {};
+    const searchFieldChanged = (name, value) => {
+        console.log(name, value);
+        if (value) {
+            queryParams[name] = value;
+        } else {
+            delete queryParams[name];
+        }
+
+        router.get(route('products.index', queryParams));
+    };
+
+    const onKeyPress = (name, e) => {
+        if (e.key !== 'Enter') return;
+        searchFieldChanged(name, e.target.value);
+    };
+
     return (
         <AuthenticatedLayout
             header={
@@ -22,6 +45,7 @@ export default function Dashboard({ products }) {
                                 <thead className="border-b-2 border-gray-500 bg-gray-50 text-center text-xs uppercase text-gray-900 dark:bg-gray-700 dark:text-gray-100">
                                     <tr className="text-nowrap">
                                         <th className="px-3 py-2">ID</th>
+                                        <th className="px-3 py-2">Image</th>
                                         <th className="px-3 py-2">Name</th>
                                         <th className="px-3 py-2">
                                             Description
@@ -31,8 +55,61 @@ export default function Dashboard({ products }) {
                                         <th className="px-3 py-2">Category</th>
                                         <th className="px-3 py-2">Create At</th>
                                         <th className="px-3 py-2">Update At</th>
-                                        <th className="px-3 py-2">Image</th>
                                         <th className="px-3 py-2">Action</th>
+                                    </tr>
+                                </thead>
+                                <thead className="border-b-2 border-gray-500 bg-gray-50 text-center text-xs uppercase text-gray-900 dark:bg-gray-700 dark:text-gray-100">
+                                    <tr className="text-nowrap">
+                                        <th className="px-3 py-2"></th>
+                                        <th className="px-3 py-2"></th>
+                                        <th className="px-3 py-2">
+                                            <TextInput
+                                                defaultValue={queryParams.name}
+                                                className="w-full"
+                                                placeholder="Product name"
+                                                onBlur={(e) =>
+                                                    searchFieldChanged(
+                                                        'name',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                onKeyPress={(e) =>
+                                                    onKeyPress('name', e)
+                                                }
+                                            />
+                                        </th>
+                                        <th className="px-3 py-2"></th>
+                                        <th className="px-3 py-2"></th>
+                                        <th className="px-3 py-2"></th>
+                                        <th className="px-3 py-2">
+                                            <SelectInput
+                                                defaultValue={
+                                                    queryParams.category_id
+                                                }
+                                                className="w-full"
+                                                onChange={(e) =>
+                                                    searchFieldChanged(
+                                                        'category_id',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            >
+                                                <option value="">
+                                                    Select Category
+                                                </option>
+                                                {categories.map((category) => (
+                                                    <option
+                                                        key={category.id}
+                                                        value={category.id}
+                                                    >
+                                                        {category.name}
+                                                    </option>
+                                                ))}
+                                            </SelectInput>
+                                        </th>
+                                        <th className="px-3 py-2"></th>
+                                        <th className="px-3 py-2"></th>
+                                        <th className="px-3 py-2"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -40,6 +117,12 @@ export default function Dashboard({ products }) {
                                         <tr key={product.id}>
                                             <td className="px-3 py-2">
                                                 {product.id}
+                                            </td>
+                                            <td className="text-nowrap px-3 py-2">
+                                                <img
+                                                    src={product.image}
+                                                    alt={product.name}
+                                                />
                                             </td>
                                             <td className="px-3 py-2">
                                                 {product.name}
@@ -61,12 +144,6 @@ export default function Dashboard({ products }) {
                                             </td>
                                             <td className="px-3 py-2">
                                                 {product.updated_at}
-                                            </td>
-                                            <td className="text-nowrap px-3 py-2">
-                                                <img
-                                                    src={product.image}
-                                                    alt={product.name}
-                                                />
                                             </td>
                                             <td className="px-3 py-2">
                                                 <Link
