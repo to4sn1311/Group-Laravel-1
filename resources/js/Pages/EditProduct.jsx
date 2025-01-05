@@ -5,22 +5,28 @@ import TextAreaInput from '@/Components/TextAreaInput';
 import TextInput from '@/Components/TextInput';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useEffect } from 'react';
 
-export default function Dashboard({ categories }) {
-    const { data, setData, post, errors, reset } = useForm({
-        image: '',
-        name: '',
-        description: '',
-        price: '',
-        stock: '',
-        category_id: '',
+export default function EditProduct({ product, categories }) {
+    const { data, setData, put, errors, reset } = useForm({
+        image: product.data.image || '',
+        name: product.data.name || '',
+        description: product.data.description || '',
+        price: product.data.price || '',
+        stock: product.data.stock || '',
+        category_id: product.data.category_id || '', // Cần đảm bảo backend trả về category_id
     });
+
+    useEffect(() => {
+        console.log('Product Data:', product);
+        console.log('Form Data:', data);
+    }, [product, data]);
 
     const onSubmit = (e) => {
         e.preventDefault();
-
-        post(route('products.store'), {
+        put(route('products.update', { product: product.data.id }), {
             onSuccess: () => reset(),
+            preserveScroll: true,
         });
     };
 
@@ -28,11 +34,12 @@ export default function Dashboard({ categories }) {
         <AuthenticatedLayout
             header={
                 <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
-                    Add New Product
+                    Edit Product:{' '}
+                    <span className="text-red">{product.name}</span>
                 </h2>
             }
         >
-            <Head title="Dashboard" />
+            <Head title="Edit Product" />
 
             <div className="py-12">
                 <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -130,27 +137,19 @@ export default function Dashboard({ categories }) {
                                         htmlFor="products_image_path"
                                         value="Product Image"
                                     />
-                                    {typeof data.image === 'string' &&
-                                        data.image.startsWith('http') && (
-                                            <img
-                                                className="w-2/4"
-                                                src={data.image}
-                                                alt={data.name}
-                                            />
-                                        )}
+                                    <img
+                                        className="w-2/4"
+                                        src={data.image}
+                                        alt={data.image}
+                                    />
                                     <TextInput
                                         id="products_image_path"
                                         type="file"
                                         name="image"
                                         className="mt-1 block w-full"
-                                        onChange={(e) => {
-                                            if (e.target.files.length > 0) {
-                                                setData(
-                                                    'image',
-                                                    e.target.files[0],
-                                                ); // Gửi file ảnh mới
-                                            }
-                                        }}
+                                        onChange={(e) =>
+                                            setData('image', e.target.files[0])
+                                        }
                                     />
                                     <InputError
                                         message={errors.image}
